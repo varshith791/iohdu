@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  name        String
+  email       String       @unique
+  password    String
+  role        String       @default("MEMBER") // ADMIN, MEMBER
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tasksAssigned Task[]     @relation("AssignedTo")
+  tasksCreated  Task[]     @relation("CreatedBy")
+  attendance    Attendance[]
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  status      String    @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, COMPLETED
+  priority    String    @default("MEDIUM")
+  assigned_to String?
+  assignedTo  User?     @relation("AssignedTo", fields: [assigned_to], references: [id])
+  created_by  String
+  createdBy   User      @relation("CreatedBy", fields: [created_by], references: [id])
+  deadline    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Attendance {
+  id          String    @id @default(uuid())
+  user_id     String
+  user        User      @relation(fields: [user_id], references: [id])
+  login_time  DateTime  @default(now())
+  logout_time DateTime?
+  total_hours Float?
+}
