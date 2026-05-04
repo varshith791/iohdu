@@ -2,8 +2,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 export default function ProfilePage() {
-  const [user, setUser] = useState({ name: '', email: '' });
+  const [user, setUser] = useState<User>({ id: '', name: '', email: '', role: '' });
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const router = useRouter();
