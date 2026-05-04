@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 
 export default function MemberDashboard() {
   const [tasks, setTasks] = useState([]);
+  const [newComments, setNewComments] = useState<{ [key: string]: string }>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -36,6 +37,19 @@ export default function MemberDashboard() {
     fetchTasks();
   };
 
+  const addComment = async (taskId: string) => {
+    const content = newComments[taskId];
+    if (!content) return;
+    const token = localStorage.getItem('token');
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${taskId}/comments`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    setNewComments({ ...newComments, [taskId]: '' });
+    fetchTasks();
+  };
+
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -58,12 +72,17 @@ export default function MemberDashboard() {
       <div className="max-w-4xl mx-auto space-y-12">
         <header className="flex justify-between items-end border-b border-border pb-8">
           <div className="space-y-1">
-            <h1 className="text-4xl font-bold tracking-tight text-primary">Ethara <span className="font-light text-foreground/50">—</span> Workspace</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-primary">TaskHub <span className="font-light text-foreground/50">—</span> Workspace</h1>
             <p className="text-muted-foreground font-medium">Execution & Updates</p>
           </div>
-          <button onClick={handleLogout} className="bg-secondary text-primary px-6 py-2.5 rounded-2xl text-sm font-bold hover:bg-primary hover:text-white transition-all shadow-sm">
-            Sign Out
-          </button>
+          <div className="flex gap-4">
+            <button onClick={() => router.push('/dashboard/member/profile')} className="bg-secondary text-primary px-6 py-2.5 rounded-2xl text-sm font-bold hover:bg-primary hover:text-white transition-all shadow-sm">
+              Profile
+            </button>
+            <button onClick={handleLogout} className="bg-secondary text-primary px-6 py-2.5 rounded-2xl text-sm font-bold hover:bg-primary hover:text-white transition-all shadow-sm">
+              Sign Out
+            </button>
+          </div>
         </header>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -114,6 +133,35 @@ export default function MemberDashboard() {
                         Mark as Done
                       </button>
                     )}
+                  </div>
+
+                  {/* Comments Section */}
+                  <div className="pt-6 border-t border-border">
+                    <h4 className="text-lg font-bold mb-4">Comments</h4>
+                    <div className="space-y-3 mb-4">
+                      {task.comments && task.comments.map((comment: any) => (
+                        <div key={comment.id} className="bg-secondary/50 p-3 rounded-xl">
+                          <p className="text-sm font-bold text-primary">{comment.user.name}</p>
+                          <p className="text-sm text-muted-foreground">{comment.content}</p>
+                          <p className="text-xs text-muted-foreground/60 mt-1">{new Date(comment.createdAt).toLocaleString()}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Add a comment..."
+                        value={newComments[task.id] || ''}
+                        onChange={(e) => setNewComments({ ...newComments, [task.id]: e.target.value })}
+                        className="flex-1 bg-secondary p-3 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                      />
+                      <button
+                        onClick={() => addComment(task.id)}
+                        className="bg-primary text-primary-foreground px-4 py-3 rounded-xl text-sm font-bold hover:scale-[1.02] active:scale-[0.98] transition-all"
+                      >
+                        Post
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))

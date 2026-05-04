@@ -117,14 +117,14 @@ app.get('/api/tasks', authenticateToken, async (req: any, res) => {
     const where = userId ? { assigned_to: userId as string } : {};
     const tasks = await prisma.task.findMany({
       where,
-      include: { assignedTo: { select: { name: true } }, createdBy: { select: { name: true } } }
+      include: { assignedTo: { select: { name: true } }, createdBy: { select: { name: true } }, comments: { include: { user: { select: { name: true } } }, orderBy: { createdAt: 'asc' } } }
     });
     return res.json(tasks);
   } else {
     // Member gets only their tasks
     const tasks = await prisma.task.findMany({
       where: { assigned_to: req.user.id },
-      include: { assignedTo: { select: { name: true } } }
+      include: { assignedTo: { select: { name: true } }, createdBy: { select: { name: true } }, comments: { include: { user: { select: { name: true } } }, orderBy: { createdAt: 'asc' } } }
     });
     return res.json(tasks);
   }
@@ -178,6 +178,46 @@ app.delete('/api/tasks/:id', authenticateToken, isAdmin, async (req, res) => {
   res.json({ success: true });
 });
 
+// Comment Routes
+app.get('/api/tasks/:id/comments', authenticateToken, async (req: any, res) => {
+  const task = await prisma.task.findUnique({
+    where: { id: req.params.id },
+    select: { assigned_to: true, created_by: true }
+  });
+  if (!task) return res.status(404).json({ error: 'Task not found' });
+  if (req.user.role !== 'ADMIN' && req.user.id !== task.assigned_to && req.user.id !== task.created_by) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  const comments = await prisma.comment.findMany({
+    where: { task_id: req.params.id },
+    include: { user: { select: { name: true } } },
+    orderBy: { createdAt: 'asc' }
+  });
+  res.json(comments);
+});
+
+app.post('/api/tasks/:id/comments', authenticateToken, async (req: any, res) => {
+  const { content } = req.body;
+  if (!content) return res.status(400).json({ error: 'Content required' });
+  const task = await prisma.task.findUnique({
+    where: { id: req.params.id },
+    select: { assigned_to: true, created_by: true }
+  });
+  if (!task) return res.status(404).json({ error: 'Task not found' });
+  if (req.user.role !== 'ADMIN' && req.user.id !== task.assigned_to && req.user.id !== task.created_by) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  const comment = await prisma.comment.create({
+    data: {
+      content,
+      task_id: req.params.id,
+      user_id: req.user.id
+    },
+    include: { user: { select: { name: true } } }
+  });
+  res.json(comment);
+});
+
 // Users list for Admin
 app.get('/api/users', authenticateToken, isAdmin, async (req, res) => {
   const users = await prisma.user.findMany({
@@ -197,6 +237,25 @@ app.post('/api/users', authenticateToken, isAdmin, async (req, res) => {
     res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
     res.status(400).json({ error: 'Email already in use' });
+  }
+});
+
+// Update user profile
+app.put('/api/users/:id', authenticateToken, async (req: any, res) => {
+  const { name, email } = req.body;
+  // Users can only update their own profile
+  if (req.user.id !== req.params.id && req.user.role !== 'ADMIN') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  try {
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data: { name, email },
+      select: { id: true, name: true, email: true, role: true }
+    });
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: 'Update failed' });
   }
 });
 

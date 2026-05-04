@@ -81,7 +81,7 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto space-y-12">
         <header className="flex justify-between items-end border-b border-border pb-8">
           <div className="space-y-1">
-            <h1 className="text-4xl font-bold tracking-tight text-primary">Ethara <span className="font-light text-foreground/50">—</span> Console</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-primary">TaskHub <span className="font-light text-foreground/50">—</span> Console</h1>
             <p className="text-muted-foreground font-medium">Control & Monitoring Center</p>
           </div>
           <button onClick={handleLogout} className="bg-secondary text-primary px-6 py-2.5 rounded-2xl text-sm font-bold hover:bg-primary hover:text-white transition-all shadow-sm">

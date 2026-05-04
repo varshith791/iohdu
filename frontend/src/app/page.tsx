@@ -16,7 +16,7 @@ export default function Home() {
             v2.0 Now Live
           </div>
           <h1 className="text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-accent">
-            Ethara <span className="font-light text-foreground/80">—</span> Platform
+            TaskHub <span className="font-light text-foreground/80">—</span> Platform
           </h1>
           <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
             The next-generation workspace for elite teams. <br/>
