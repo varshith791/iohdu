@@ -16,14 +16,22 @@ export default function AdminLogin() {
     const body = isLogin ? { email, password } : { name, email, password, role: 'ADMIN' };
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+      const res = await fetch(`${API}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      const data = await res.json();
+      const text = await res.text();
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json') ? JSON.parse(text) : null;
       
-      if (data.token) {
+      if (!res.ok) {
+        const message = data?.error || text.replace(/<[^>]+>/g, '').trim() || `Request failed (${res.status})`;
+        alert(message);
+        return;
+      }
+      
+      if (data?.token) {
         if (data.user.role !== 'ADMIN') {
           alert('Access Denied: This portal is for Admins only.');
           return;

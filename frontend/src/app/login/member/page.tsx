@@ -36,14 +36,17 @@ export default function MemberLogin() {
         body: JSON.stringify(body)
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json') ? JSON.parse(text) : null;
 
       if (!res.ok) {
-        alert(data.error || "Request failed");
+        const message = data?.error || text.replace(/<[^>]+>/g, '').trim() || `Request failed (${res.status})`;
+        alert(message);
         return;
       }
 
-      if (data.token) {
+      if (data?.token) {
         if (data.user.role !== 'MEMBER') {
           alert('Use Admin portal for admin login');
           return;
