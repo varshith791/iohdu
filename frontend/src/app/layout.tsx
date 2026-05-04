@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ethara - Platform",
-  description: "The elite workspace management platform for high-performance teams.",
+  title: "TaskHub - Platform",
+  description: "A fresh task management platform built for modern teams.",
 };
 
 export default function RootLayout({

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL || '';
 
 export default function MemberLogin() {
   const [isLogin, setIsLogin] = useState(true);
@@ -68,9 +68,13 @@ export default function MemberLogin() {
         alert(data.error || "Authentication failed");
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Connection error - backend not reachable");
+      if (!API) {
+        alert('Connection error: API URL is not configured. Set NEXT_PUBLIC_API_URL in Vercel environment variables.');
+      } else {
+        alert(`Connection error: ${error.message || 'backend not reachable'}`);
+      }
     }
   };
 
@@ -82,7 +86,7 @@ export default function MemberLogin() {
       <div className="w-full max-w-md space-y-8 animate-in slide-in-from-bottom-4 duration-700 relative z-10">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-            Ethara Workspace
+            TaskHub Workspace
           </h1>
           <p className="text-muted-foreground font-medium">{isLogin ? 'Collaborate with your team' : 'Join your workspace'}</p>
         </div>

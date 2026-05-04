@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const API = process.env.NEXT_PUBLIC_API_URL || '';
+
 export default function AdminLogin() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -40,8 +42,13 @@ export default function AdminLogin() {
       } else {
         alert(data.error || 'Authentication failed');
       }
-    } catch (e) {
-      alert('Connection error');
+    } catch (e: any) {
+      console.error(e);
+      if (!API) {
+        alert('Connection error: API URL is not configured. Set NEXT_PUBLIC_API_URL in Vercel environment variables.');
+      } else {
+        alert(`Connection error: ${e.message || 'backend not reachable'}`);
+      }
     }
   };
 
@@ -53,7 +60,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-md space-y-8 animate-in slide-in-from-bottom-4 duration-700 relative z-10">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-            Ethara Console
+            TaskHub Console
           </h1>
           <p className="text-muted-foreground font-medium">{isLogin ? 'Manage your workspace' : 'Create a manager account'}</p>
         </div>
